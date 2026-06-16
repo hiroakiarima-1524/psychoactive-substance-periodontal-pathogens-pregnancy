@@ -43,6 +43,7 @@ model_vars <- c(
 ############################################################
 # Table S1
 # Normality assessment of categorical variables
+# (log-transformed bacterial abundance after +1 transformation)
 ############################################################
 
 ############################################################
@@ -52,13 +53,20 @@ model_vars <- c(
 shapiro_brushing <- analysis_data %>%
   filter(!is.na(brushing_frequency),
          !is.na(p_gingivalis)) %>%
+  mutate(
+    # add +1 to handle zero values
+    p_gingivalis_adj = p_gingivalis + 1,
+    
+    # log transformation
+    p_gingivalis_log = log(p_gingivalis_adj)
+  ) %>%
   group_by(brushing_frequency) %>%
   summarise(
     n = n(),
     shapiro_p =
       ifelse(
         n >= 3,
-        shapiro.test(p_gingivalis)$p.value,
+        shapiro.test(p_gingivalis_log)$p.value,
         NA_real_
       )
   )
